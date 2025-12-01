@@ -9,9 +9,10 @@ st.set_page_config(page_title="DW 評価ツール", layout="wide")
 st.title("💧 透析患者の Dry Weight (DW) 総合評価ツール")
 
 # モデル読み込み
-model = joblib.load("/mnt/data/dw_model.joblib")
-scaler = joblib.load("/mnt/data/dw_scaler.joblib")
-le = joblib.load("/mnt/data/dw_label_encoder.joblib")
+model = joblib.load("dw_model.joblib")
+scaler = joblib.load("dw_scaler.joblib")
+le = joblib.load("dw_label_encoder.joblib")
+
 # -----------------------
 # 🧑‍⚕️ 基本情報入力（囲い枠）
 # -----------------------
@@ -307,6 +308,7 @@ with col3:
         st.metric("NRI-JH", f"Score {score} ({nri_status})")
 
     st.metric("CTR", f"{ctr_now:.1f}%")
+
 
 
 
