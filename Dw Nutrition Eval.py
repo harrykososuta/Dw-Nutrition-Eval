@@ -88,55 +88,64 @@ with st.container():
 # 🍽️ 栄養状態の評価（GNRI + NRI-JH）
 # -----------------------
 st.header("🍽️ 栄養状態の評価（GNRI + NRI-JH）")
+
 with st.container():
     col1, col2, col3 = st.columns(3)
+
     with col1:
         alb = st.number_input("アルブミン (g/dL)", step=0.1)
         cre = st.number_input("血清クレアチニン (mg/dL)", step=0.1)
+
     with col2:
         tcho = st.number_input("総コレステロール (mg/dL)", step=1)
         score = st.number_input("NRI-JH スコア (0-12)", min_value=0, max_value=20, step=1)
+
     with col3:
-        pass # 余白を持たせるための空欄
+        pass  # 余白のため
 
-
+# GNRI 計算と評価
 gnri = None
-nri_jh = None
 gnri_status = "未評価"
 gnri_color = "gray"
+
+if 'post_bw' in locals() and 'ideal_weight' in locals() and post_bw and ideal_weight and alb:
+    gnri = (14.89 * alb) + (41.7 * (post_bw / ideal_weight))
+    if gnri < 90:
+        gnri_status = "High Risk"
+        gnri_color = "#FF9999"
+    elif gnri < 98:
+        gnri_status = "Middle Risk"
+        gnri_color = "#FFD700"
+    else:
+        gnri_status = "Low Risk"
+        gnri_color = "#90EE90"
+
+    st.markdown(
+        f"<div style='padding:1em;background-color:{gnri_color};border-radius:10px'>"
+        f"<b>GNRI: {gnri:.1f} → {gnri_status}</b></div>",
+        unsafe_allow_html=True
+    )
+
+# NRI-JH スコア評価
 nri_status = "未評価"
 nri_color = "gray"
 
-
-if post_bw and alb:
-gnri = (14.89 * alb) + (41.7 * (post_bw / ideal_weight)) if ideal_weight else 0.0
-if gnri < 90:
-gnri_status = "High Risk"
-gnri_color = "#FF9999"
-elif 90 <= gnri <= 98:
-gnri_status = "Middle Risk"
-gnri_color = "#FFD700"
-else:
-gnri_status = "Low Risk"
-gnri_color = "#90EE90"
-
-
-st.markdown(f"<div style='padding:1em;background-color:{gnri_color};border-radius:10px'><b>GNRI: {gnri:.1f} → {gnri_status}</b></div>", unsafe_allow_html=True)
-
-
-# NRI-JHスコアに基づく判定
 if score >= 10:
-nri_status = "High Risk"
-nri_color = "#FF9999"
-elif 7 <= score < 10:
-nri_status = "Medium Risk"
-nri_color = "#FFD700"
-elif score < 7:
-nri_status = "Low Risk"
-nri_color = "#90EE90"
+    nri_status = "High Risk"
+    nri_color = "#FF9999"
+elif score >= 7:
+    nri_status = "Medium Risk"
+    nri_color = "#FFD700"
+else:
+    nri_status = "Low Risk"
+    nri_color = "#90EE90"
 
+st.markdown(
+    f"<div style='padding:1em;background-color:{nri_color};border-radius:10px'>"
+    f"<b>NRI-JH: Score {score} → {nri_status}</b></div>",
+    unsafe_allow_html=True
+)
 
-st.markdown(f"<div style='padding:1em;background-color:{nri_color};border-radius:10px'><b>NRI-JH: Score {score} → {nri_status}</b></div>", unsafe_allow_html=True)
 # -----------------------
 # 💧 DW評価ロジック
 # -----------------------
@@ -184,6 +193,7 @@ with col3:
     if score:
         st.metric("NRI-JH", f"Score {score} ({nri_status})")
     st.metric("CTR", f"{ctr_now:.1f}%")
+
 
 
 
