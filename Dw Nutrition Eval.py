@@ -282,6 +282,7 @@ with st.expander("AI診断を実行する"):
 # -----------------------
 st.header("🧾 評価サマリ（スクリーンショット推奨）")
 col1, col2, col3 = st.columns(3)
+
 with col1:
     st.metric("DW", f"{dw:.1f} kg")
     st.metric("DW状態", dw_status)
@@ -298,9 +299,14 @@ with col2:
 with col3:
     if gnri:
         st.metric("GNRI", f"{gnri:.1f} ({gnri_status})")
-    if score:
+
+    # NameError対策：scoreの定義があるかチェック
+    if 'score' in locals() and score is not None:
         st.metric("NRI-JH", f"Score {score} ({nri_status})")
+
     st.metric("CTR", f"{ctr_now:.1f}%")
+
+
 
 
 
