@@ -87,7 +87,7 @@ with st.container():
 # -----------------------
 # 🍽️ 栄養状態の評価（GNRI + NRI-JH）
 # -----------------------
-st.header("🍽️ 栄養状態の評価（GNRI + NRI-JH）")
+st.header("🍽️ 栄養状態の評価（GNRI + NRI-JH + 推定塩分摂取量）")
 
 with st.container():
     col1, col2, col3 = st.columns(3)
@@ -101,9 +101,11 @@ with st.container():
         score = st.number_input("NRI-JH スコア (0-12)", min_value=0, max_value=20, step=1)
 
     with col3:
-        pass  # 余白のため
+        delta_bw = st.number_input("ΔBW（除水量 kg）", step=0.1)
 
+# --------------------
 # GNRI 計算と評価
+# --------------------
 gnri = None
 gnri_status = "未評価"
 gnri_color = "gray"
@@ -126,7 +128,9 @@ if 'post_bw' in locals() and 'ideal_weight' in locals() and post_bw and ideal_we
         unsafe_allow_html=True
     )
 
+# --------------------
 # NRI-JH スコア評価
+# --------------------
 nri_status = "未評価"
 nri_color = "gray"
 
@@ -145,6 +149,18 @@ st.markdown(
     f"<b>NRI-JH: Score {score} → {nri_status}</b></div>",
     unsafe_allow_html=True
 )
+
+# --------------------
+# 塩分摂取量 推定
+# --------------------
+if delta_bw:
+    estimated_salt = delta_bw * 3.22
+    st.markdown(
+        f"<div style='padding:1em;background-color:#E0FFFF;border-radius:10px'>"
+        f"<b>推定塩分摂取量: {estimated_salt:.2f} g/日</b> "
+        f"（ΔBW × 3.22）</div>",
+        unsafe_allow_html=True
+    )
 
 # -----------------------
 # 💧 DW評価ロジック
@@ -193,6 +209,7 @@ with col3:
     if score:
         st.metric("NRI-JH", f"Score {score} ({nri_status})")
     st.metric("CTR", f"{ctr_now:.1f}%")
+
 
 
 
