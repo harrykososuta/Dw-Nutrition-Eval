@@ -87,30 +87,27 @@ with st.container():
 # -----------------------
 # 🍽️ 栄養状態の評価（GNRI + NRI-JH）
 # -----------------------
-st.header("🍽️ 栄養状態の評価（GNRI + NRI-JH + 推定塩分摂取量）")
-
+# -----------------------
+# 🍽️ 栄養状態の評価（GNRI + NRI-JH + 塩分摂取量）
+# -----------------------
+st.header("🍽️ 栄養状態の評価（GNRI + NRI-JH + 塩分摂取量）")
 with st.container():
     col1, col2, col3 = st.columns(3)
-
     with col1:
         alb = st.number_input("アルブミン (g/dL)", step=0.1)
         cre = st.number_input("血清クレアチニン (mg/dL)", step=0.1)
-
     with col2:
         tcho = st.number_input("総コレステロール (mg/dL)", step=1)
-        score = st.number_input("NRI-JH スコア (0-12)", min_value=0, max_value=20, step=1)
-
+        # NRI-JHスコアは手入力から除外（将来の自動算出に備え）
     with col3:
-        st.markdown("**除水量（ΔBW）** は体重データから自動計算")
+        pass  # 空欄
 
-# --------------------
-# GNRI 計算と評価
-# --------------------
+# ---- GNRI 評価 ----
 gnri = None
 gnri_status = "未評価"
 gnri_color = "gray"
 
-if 'post_bw' in locals() and 'ideal_weight' in locals() and post_bw and ideal_weight and alb:
+if post_bw and ideal_weight and alb:
     gnri = (14.89 * alb) + (41.7 * (post_bw / ideal_weight))
     if gnri < 90:
         gnri_status = "High Risk"
@@ -128,38 +125,28 @@ if 'post_bw' in locals() and 'ideal_weight' in locals() and post_bw and ideal_we
         unsafe_allow_html=True
     )
 
-# --------------------
-# NRI-JH スコア評価
-# --------------------
+# ---- NRI-JH 判定 ----
+# 入力スコアがないため、将来的な自動計算に備えて初期化だけ
 nri_status = "未評価"
-nri_color = "gray"
+nri_color = "#D3D3D3"
+nri_score = None  # 仮
 
-if score >= 10:
-    nri_status = "High Risk"
-    nri_color = "#FF9999"
-elif score >= 7:
-    nri_status = "Medium Risk"
-    nri_color = "#FFD700"
-else:
-    nri_status = "Low Risk"
-    nri_color = "#90EE90"
-
-st.markdown(
-    f"<div style='padding:1em;background-color:{nri_color};border-radius:10px'>"
-    f"<b>NRI-JH: Score {score} → {nri_status}</b></div>",
-    unsafe_allow_html=True
-)
-
-# --------------------
-# 塩分摂取量 推定（ΔBW × 3.22）
-# --------------------
+# ---- ΔBWおよび推定塩分摂取量の計算 ----
 delta_bw = pre_bw - post_bw if pre_bw and post_bw else None
 
 if delta_bw and delta_bw > 0:
     estimated_salt = delta_bw * 3.22
+
+    if estimated_salt > 8:
+        salt_color = "#FF9999"
+        salt_status = "⚠️ 高リスク（塩分過多）"
+    else:
+        salt_color = "#90EE90"
+        salt_status = "適正範囲"
+
     st.markdown(
-        f"<div style='padding:1em;background-color:#E0FFFF;border-radius:10px'>"
-        f"<b>推定塩分摂取量: {estimated_salt:.2f} g/日</b> "
+        f"<div style='padding:1em;background-color:{salt_color};border-radius:10px'>"
+        f"<b>推定塩分摂取量: {estimated_salt:.2f} g/日</b> — {salt_status}"
         f"（ΔBW {delta_bw:.1f}kg × 3.22）</div>",
         unsafe_allow_html=True
     )
@@ -212,6 +199,7 @@ with col3:
     if score:
         st.metric("NRI-JH", f"Score {score} ({nri_status})")
     st.metric("CTR", f"{ctr_now:.1f}%")
+
 
 
 
