@@ -240,45 +240,42 @@ ai_features = ["年齢", "身長", "DW", "ALB", "Cre", "GNRI", "Kr", "PWI"]
 
 
 # -----------------------
-# 🤖 AI診断ボタン
+# 🤖 AI診断
 # -----------------------
 st.header("🤖 AI診断")
 with st.expander("AI診断を実行する"):
-st.markdown("**下記の数値を基に、過去1850例の傾向からあなたのDW評価傾向を予測します。**")
+    st.markdown("**下記の数値を基に、過去1850例の傾向からあなたのDW評価傾向を予測します。**")
 
+    # 入力値を集める
+    ai_input = {}
+    with st.form("ai_form"):
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            ai_input["年齢"] = age
+            ai_input["身長"] = height
+        with col2:
+            ai_input["DW"] = dw
+            ai_input["ALB"] = alb
+        with col3:
+            ai_input["Cre"] = cre
+            ai_input["GNRI"] = gnri if gnri else 0
+        with col4:
+            ai_input["Kr"] = kr
+            ai_input["PWI"] = pwi
 
-# 入力値を集める
-ai_input = {}
-with st.form("ai_form"):
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-ai_input["年齢"] = age
-ai_input["身長"] = height
-with col2:
-ai_input["DW"] = dw
-ai_input["ALB"] = alb
-with col3:
-ai_input["Cre"] = cre
-ai_input["GNRI"] = gnri if gnri else 0
-with col4:
-ai_input["Kr"] = kr
-ai_input["PWI"] = pwi
+        submitted = st.form_submit_button("AI診断する")
 
+    if submitted:
+        if all([ai_input[k] is not None for k in ai_features]):
+            input_df = pd.DataFrame([ai_input])
+            input_scaled = scaler.transform(input_df)
+            pred_label = model.predict(input_scaled)[0]
+            pred_class = le.inverse_transform([pred_label])[0]
 
-submitted = st.form_submit_button("AI診断する")
+            st.success(f"💡 AI診断結果： {pred_class} 傾向が推定されます")
+        else:
+            st.warning("必要な情報が不足しています。全ての入力値を確認してください。")
 
-
-if submitted:
-if all([ai_input[k] is not None for k in ai_features]):
-input_df = pd.DataFrame([ai_input])
-input_scaled = scaler.transform(input_df)
-pred_label = model.predict(input_scaled)[0]
-pred_class = le.inverse_transform([pred_label])[0]
-
-
-st.success(f"💡 AI診断結果： {pred_class} 傾向が推定されます")
-else:
-st.warning("必要な情報が不足しています。全ての入力値を確認してください。")
 
 # -----------------------
 # 📋 最終サマリ表示
@@ -304,6 +301,7 @@ with col3:
     if score:
         st.metric("NRI-JH", f"Score {score} ({nri_status})")
     st.metric("CTR", f"{ctr_now:.1f}%")
+
 
 
 
