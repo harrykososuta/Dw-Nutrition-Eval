@@ -85,6 +85,32 @@ with st.container():
             probnp = st.number_input("NT-proBNP (pg/mL)", step=1.0)
 
 # -----------------------
+# 🍽️ 栄養状態の評価（GNRI + NRI-JH）
+# -----------------------
+st.header("🍽️ 栄養状態の評価（GNRI + NRI-JH）")
+with st.container():
+col1, col2, col3 = st.columns(3)
+with col1:
+alb = st.number_input("アルブミン (g/dL)", step=0.1)
+cre = st.number_input("血清クレアチニン (mg/dL)", step=0.1)
+with col2:
+tcho = st.number_input("総コレステロール (mg/dL)", step=1)
+score = st.number_input("NRI-JH スコア (0-12)", min_value=0, max_value=20, step=1)
+with col3:
+pass # 余白を持たせるための空欄
+
+
+gnri = None
+nri_jh = None
+gnri_status = "未評価"
+gnri_color = "gray"
+nri_status = "未評価"
+nri_color = "gray"
+
+
+if post_bw and alb:
+gnri = (14.89 * alb) + (41.7 * (post_bw / ideal_weight)) if ideal_weight else 0.0
+if gnri < 90:
 gnri_status = "High Risk"
 gnri_color = "#FF9999"
 elif 90 <= gnri <= 98:
@@ -111,7 +137,6 @@ nri_color = "#90EE90"
 
 
 st.markdown(f"<div style='padding:1em;background-color:{nri_color};border-radius:10px'><b>NRI-JH: Score {score} → {nri_status}</b></div>", unsafe_allow_html=True)
-
 # -----------------------
 # 💧 DW評価ロジック
 # -----------------------
@@ -159,5 +184,6 @@ with col3:
     if score:
         st.metric("NRI-JH", f"Score {score} ({nri_status})")
     st.metric("CTR", f"{ctr_now:.1f}%")
+
 
 
