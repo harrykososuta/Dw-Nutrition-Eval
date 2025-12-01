@@ -89,15 +89,15 @@ with st.container():
 # -----------------------
 st.header("🍽️ 栄養状態の評価（GNRI + NRI-JH）")
 with st.container():
-col1, col2, col3 = st.columns(3)
-with col1:
-alb = st.number_input("アルブミン (g/dL)", step=0.1)
-cre = st.number_input("血清クレアチニン (mg/dL)", step=0.1)
-with col2:
-tcho = st.number_input("総コレステロール (mg/dL)", step=1)
-score = st.number_input("NRI-JH スコア (0-12)", min_value=0, max_value=20, step=1)
-with col3:
-pass # 余白を持たせるための空欄
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        alb = st.number_input("アルブミン (g/dL)", step=0.1)
+        cre = st.number_input("血清クレアチニン (mg/dL)", step=0.1)
+    with col2:
+        tcho = st.number_input("総コレステロール (mg/dL)", step=1)
+        score = st.number_input("NRI-JH スコア (0-12)", min_value=0, max_value=20, step=1)
+    with col3:
+        pass # 余白を持たせるための空欄
 
 
 gnri = None
@@ -184,6 +184,7 @@ with col3:
     if score:
         st.metric("NRI-JH", f"Score {score} ({nri_status})")
     st.metric("CTR", f"{ctr_now:.1f}%")
+
 
 
 
