@@ -101,7 +101,7 @@ with st.container():
         score = st.number_input("NRI-JH スコア (0-12)", min_value=0, max_value=20, step=1)
 
     with col3:
-        delta_bw = st.number_input("ΔBW（除水量 kg）", step=0.1)
+        st.markdown("**除水量（ΔBW）** は体重データから自動計算")
 
 # --------------------
 # GNRI 計算と評価
@@ -151,16 +151,19 @@ st.markdown(
 )
 
 # --------------------
-# 塩分摂取量 推定
+# 塩分摂取量 推定（ΔBW × 3.22）
 # --------------------
-if delta_bw:
+delta_bw = pre_bw - post_bw if pre_bw and post_bw else None
+
+if delta_bw and delta_bw > 0:
     estimated_salt = delta_bw * 3.22
     st.markdown(
         f"<div style='padding:1em;background-color:#E0FFFF;border-radius:10px'>"
         f"<b>推定塩分摂取量: {estimated_salt:.2f} g/日</b> "
-        f"（ΔBW × 3.22）</div>",
+        f"（ΔBW {delta_bw:.1f}kg × 3.22）</div>",
         unsafe_allow_html=True
     )
+
 
 # -----------------------
 # 💧 DW評価ロジック
@@ -209,6 +212,7 @@ with col3:
     if score:
         st.metric("NRI-JH", f"Score {score} ({nri_status})")
     st.metric("CTR", f"{ctr_now:.1f}%")
+
 
 
 
