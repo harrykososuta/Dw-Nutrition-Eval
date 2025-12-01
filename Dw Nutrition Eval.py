@@ -85,25 +85,32 @@ with st.container():
             probnp = st.number_input("NT-proBNP (pg/mL)", step=1.0)
 
 # -----------------------
-# 🧮 栄養評価 GNRI
-# -----------------------
-st.header("🍽️ 栄養状態の評価（GNRI）")
-gnri = None
-gnri_status = "未評価"
-gnri_color = "gray"
-alb = st.number_input("アルブミン (g/dL)", step=0.1)
-if post_bw and alb:
-    gnri = (14.89 * alb) + (41.7 * (post_bw / ideal_weight)) if ideal_weight else 0.0
-    if gnri < 92:
-        gnri_status = "High Risk"
-        gnri_color = "#FF9999"
-    elif 92 <= gnri <= 98:
-        gnri_status = "Middle Risk"
-        gnri_color = "#FFD700"
-    else:
-        gnri_status = "Low Risk"
-        gnri_color = "#90EE90"
-    st.markdown(f"<div style='padding:1em;background-color:{gnri_color};border-radius:10px'><b>GNRI: {gnri:.1f} → {gnri_status}</b></div>", unsafe_allow_html=True)
+gnri_status = "High Risk"
+gnri_color = "#FF9999"
+elif 90 <= gnri <= 98:
+gnri_status = "Middle Risk"
+gnri_color = "#FFD700"
+else:
+gnri_status = "Low Risk"
+gnri_color = "#90EE90"
+
+
+st.markdown(f"<div style='padding:1em;background-color:{gnri_color};border-radius:10px'><b>GNRI: {gnri:.1f} → {gnri_status}</b></div>", unsafe_allow_html=True)
+
+
+# NRI-JHスコアに基づく判定
+if score >= 10:
+nri_status = "High Risk"
+nri_color = "#FF9999"
+elif 7 <= score < 10:
+nri_status = "Medium Risk"
+nri_color = "#FFD700"
+elif score < 7:
+nri_status = "Low Risk"
+nri_color = "#90EE90"
+
+
+st.markdown(f"<div style='padding:1em;background-color:{nri_color};border-radius:10px'><b>NRI-JH: Score {score} → {nri_status}</b></div>", unsafe_allow_html=True)
 
 # -----------------------
 # 💧 DW評価ロジック
@@ -149,5 +156,8 @@ with col2:
 with col3:
     if gnri:
         st.metric("GNRI", f"{gnri:.1f} ({gnri_status})")
+    if score:
+        st.metric("NRI-JH", f"Score {score} ({nri_status})")
     st.metric("CTR", f"{ctr_now:.1f}%")
+
 
