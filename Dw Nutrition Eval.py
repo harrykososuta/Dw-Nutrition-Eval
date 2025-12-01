@@ -8,6 +8,10 @@ import joblib
 st.set_page_config(page_title="DW 評価ツール", layout="wide")
 st.title("💧 透析患者の Dry Weight (DW) 総合評価ツール")
 
+# モデル読み込み
+model = joblib.load("/mnt/data/dw_model.joblib")
+scaler = joblib.load("/mnt/data/dw_scaler.joblib")
+le = joblib.load("/mnt/data/dw_label_encoder.joblib")
 # -----------------------
 # 🧑‍⚕️ 基本情報入力（囲い枠）
 # -----------------------
@@ -237,8 +241,6 @@ ai_features = ["年齢", "身長", "DW", "ALB", "Cre", "GNRI", "Kr", "PWI"]
 
 # 仮モデル・スケーラー・エンコーダ（前提として外部で学習済み）
 # ここでは変数 model, scaler, le が存在しているとする（前段階で定義済）
-
-
 # -----------------------
 # 🤖 AI診断
 # -----------------------
@@ -246,36 +248,36 @@ st.header("🤖 AI診断")
 with st.expander("AI診断を実行する"):
     st.markdown("**下記の数値を基に、過去1850例の傾向からあなたのDW評価傾向を予測します。**")
 
-    # 入力値を集める
+
     ai_input = {}
     with st.form("ai_form"):
         col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            ai_input["年齢"] = age
-            ai_input["身長"] = height
-        with col2:
-            ai_input["DW"] = dw
-            ai_input["ALB"] = alb
-        with col3:
-            ai_input["Cre"] = cre
-            ai_input["GNRI"] = gnri if gnri else 0
-        with col4:
-            ai_input["Kr"] = kr
-            ai_input["PWI"] = pwi
+    with col1:
+        ai_input["年齢"] = age
+        ai_input["身長"] = height
+    with col2:
+        ai_input["DW"] = dw
+        ai_input["ALB"] = st.number_input("ALB (g/dL)", step=0.1)
+    with col3:
+        ai_input["GNRI"] = st.number_input("GNRI", step=1.0)
+    with col4:
+        ai_input["Kr"] = kr
+        ai_input["PWI"] = pwi
 
-        submitted = st.form_submit_button("AI診断する")
 
-    if submitted:
-        if all([ai_input[k] is not None for k in ai_features]):
-            input_df = pd.DataFrame([ai_input])
-            input_scaled = scaler.transform(input_df)
-            pred_label = model.predict(input_scaled)[0]
-            pred_class = le.inverse_transform([pred_label])[0]
+    submitted = st.form_submit_button("AI診断する")
 
-            st.success(f"💡 AI診断結果： {pred_class} 傾向が推定されます")
-        else:
-            st.warning("必要な情報が不足しています。全ての入力値を確認してください。")
 
+if submitted:
+    ai_features = ["年齢", "身長", "DW", "ALB", "GNRI", "Kr", "PWI"]
+    if all([ai_input[k] is not None for k in ai_features]):
+        input_df = pd.DataFrame([ai_input])
+        input_scaled = scaler.transform(input_df)
+        pred_label = model.predict(input_scaled)[0]
+        pred_class = le.inverse_transform([pred_label])[0]
+        st.success(f"💡 AI診断結果： {pred_class} 傾向が推定されます")
+    else:
+        st.warning("必要な情報が不足しています。全ての入力値を確認してください。")
 
 # -----------------------
 # 📋 最終サマリ表示
@@ -305,6 +307,7 @@ with col3:
         st.metric("NRI-JH", f"Score {score} ({nri_status})")
 
     st.metric("CTR", f"{ctr_now:.1f}%")
+
 
 
 
