@@ -91,7 +91,8 @@ st.header("🍽️ 栄養状態の評価（GNRI）")
 gnri = None
 gnri_status = "未評価"
 gnri_color = "gray"
-if post_bw and alb := st.number_input("アルブミン (g/dL)", step=0.1):
+alb = st.number_input("アルブミン (g/dL)", step=0.1)
+if post_bw and alb:
     gnri = (14.89 * alb) + (41.7 * (post_bw / ideal_weight)) if ideal_weight else 0.0
     if gnri < 92:
         gnri_status = "High Risk"
@@ -149,3 +150,4 @@ with col3:
     if gnri:
         st.metric("GNRI", f"{gnri:.1f} ({gnri_status})")
     st.metric("CTR", f"{ctr_now:.1f}%")
+
